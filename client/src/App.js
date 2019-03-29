@@ -4,7 +4,7 @@ import CreateJob from "./Components/CreateJob/CreateJob";
 class App extends Component {
   render() {
     return (
-      <div>
+      <div className="p-2">
         <CreateJob />
       </div>
     );

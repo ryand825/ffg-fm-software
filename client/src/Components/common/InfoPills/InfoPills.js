@@ -26,7 +26,7 @@ function InfoPills(props) {
 
 InfoPills.propTypes = {
   infoArray: PropTypes.array.isRequired,
-  infoHeader: PropTypes.string.isRequired
+  infoHeader: PropTypes.string
 };
 
 export default InfoPills;

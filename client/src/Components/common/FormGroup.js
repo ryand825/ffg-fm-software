@@ -2,25 +2,46 @@ import React from "react";
 import PropTypes from "prop-types";
 
 function FormGroup(props) {
-  const { label, placeholder, value, onChange, type, optionsArray } = props;
+  const {
+    label,
+    placeholder,
+    value,
+    onChange,
+    type,
+    optionsArray,
+    optionsKeyString
+  } = props;
   let field = <input />;
 
   const handleChange = e => {
     onChange(e.target.value);
   };
 
+  const handleSelect = e => {
+    onChange(optionsArray[e.target.value]);
+  };
+
   switch (type) {
     case "select":
       field = (
         <select
-          onChange={handleChange}
-          value={value}
+          onChange={handleSelect}
           type={type || "text"}
           className="custom-select"
           id={label + "-form"}
           placeholder={placeholder}
+          defaultValue=""
         >
-          {optionsArray}
+          <option disabled value="">
+            {label}
+          </option>
+          {optionsArray.map((option, key) => {
+            return (
+              <option key={"option" + key} value={key}>
+                {option[optionsKeyString]}
+              </option>
+            );
+          })}
         </select>
       );
       break;
@@ -59,7 +80,7 @@ function FormGroup(props) {
 FormGroup.propTypes = {
   label: PropTypes.string,
   placeholder: PropTypes.string,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   onChange: PropTypes.func.isRequired,
   type: PropTypes.string
 };

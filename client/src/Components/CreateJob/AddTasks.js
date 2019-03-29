@@ -23,7 +23,7 @@ function AddTasks(props) {
     return (
       <li
         key={"task" + key}
-        class="list-group-item d-flex justify-content-between align-items-center"
+        className="list-group-item d-flex justify-content-between align-items-center"
       >
         {task}
         <button
@@ -38,21 +38,21 @@ function AddTasks(props) {
   return (
     <>
       <label htmlFor="">Add Tasks</label>
-      <ul class="list-group">
+      <ul className="list-group">
         <li className="list-group-item input-group">
-          <div class="input-group">
+          <div className="input-group">
             <input
               value={formValue}
               onChange={e => setFormValue(e.target.value)}
               type="text"
-              class="form-control"
+              className="form-control"
               placeholder="New Task..."
             />
-            <div class="input-group-append">
+            <div className="input-group-append">
               <button
                 disabled={disabled}
                 onClick={addTask}
-                class="btn btn-outline-success"
+                className="btn btn-outline-success"
                 type="button"
               >
                 Add

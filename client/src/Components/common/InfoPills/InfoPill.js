@@ -12,7 +12,7 @@ function InfoPill(props) {
             {pillTitle}
           </small>
         </div>
-        <div className="form-control">{pillContent}</div>
+        <div className="form-control">{pillContent || "N/A"}</div>
       </div>
     </div>
   );

@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 
 import AddTasks from "./AddTasks";
+import AssetSelector from "./AssetSelector";
 import FormGroup from "../common/FormGroup";
 import AutoComplete from "../common/AutoComplete";
 import Card from "../common/Card";
 import InfoPills from "../common/InfoPills/InfoPills";
 
 import locationData from "./locationData";
-import assetData from "./assetData";
 
 function CreateJob() {
-  const techData = [{ name: "Ryan" }, { name: "Tom" }];
+  const techData = [{ name: "Ryan" }, { name: "Tom" }, { name: "3rd Party" }];
   const nowISO = new Date().toISOString().split("T")[0];
 
   const [currentLocation, setCurrentLocation] = useState({});
@@ -19,22 +19,21 @@ function CreateJob() {
   const [assignee, setAssignee] = useState("Unassigned");
   const [jobDescription, setJobDescription] = useState("");
   const [selectedAsset, setSelectedAsset] = useState({});
-  const [isAsset, toggleAsset] = useState(false);
 
   return (
     <div className="container">
       <form className="form">
         <Card header="Create Job">
-          <div className="form-row">
-            <div className="col-md">
-              {/* Location form */}
-              <AutoComplete
-                keyString="locationName"
-                label="Choose Location"
-                setData={setCurrentLocation}
-                itemArray={locationData}
-              />
-
+          {/* Location form */}
+          <AutoComplete
+            keyString="locationName"
+            label="Choose Location"
+            setData={setCurrentLocation}
+            itemArray={locationData}
+          />
+          {/* Hides form if location is not selected */}
+          {currentLocation.locationName && (
+            <>
               <hr className="seperator" />
               {/* Location Info */}
               <InfoPills
@@ -68,7 +67,6 @@ function CreateJob() {
               />
               <hr className="seperator" />
               {/* Job description field */}
-
               <FormGroup
                 type="textarea"
                 value={jobDescription}
@@ -76,20 +74,11 @@ function CreateJob() {
                 onChange={setJobDescription}
               />
               <hr className="seperator" />
-            </div>
-            <div className="col-md">
               {/* Tech Selection */}
               <FormGroup
                 type="select"
-                optionsArray={[{ name: "Unassigned" }, ...techData].map(
-                  (option, key) => {
-                    return (
-                      <option key={"option" + key} value={option.name}>
-                        {option.name}
-                      </option>
-                    );
-                  }
-                )}
+                optionsKeyString="name"
+                optionsArray={techData}
                 value={assignee}
                 label="Assign Tech"
                 onChange={setAssignee}
@@ -103,44 +92,15 @@ function CreateJob() {
                 onChange={setSelectedDate}
               />
               <hr className="seperator" />
-              {isAsset ? (
-                <>
-                  <button
-                    onClick={() => {
-                      toggleAsset(false);
-                      setSelectedAsset({});
-                    }}
-                    className="btn btn-outline-danger mb-2"
-                  >
-                    Remove Asset
-                  </button>
-                  <FormGroup
-                    type="select"
-                    optionsArray={assetData.map((option, key) => {
-                      return (
-                        <option key={"option" + key} value={option.name}>
-                          {option.assetName}
-                        </option>
-                      );
-                    })}
-                    value={selectedAsset}
-                    label="Select Asset"
-                    onChange={setSelectedAsset}
-                  />
-                </>
-              ) : (
-                <button
-                  onClick={() => toggleAsset(true)}
-                  className="btn btn-outline-primary"
-                >
-                  Add Asset
-                </button>
-              )}
+              <AssetSelector
+                selectedAsset={selectedAsset}
+                setSelectedAsset={setSelectedAsset}
+              />
               <hr className="seperator" />
               {/* Task List */}
-              <AddTasks taskList={taskList} setTaskList={setTaskList} />
-            </div>
-          </div>
+              <AddTasks taskList={taskList} setTaskList={setTaskList} />{" "}
+            </>
+          )}
         </Card>
       </form>
     </div>
