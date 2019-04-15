@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { sp } from "@pnp/sp";
 
 import FormGroup from "../common/FormGroup";
 import InfoPills from "../common/InfoPills/InfoPills";
-import { batchModelsByIds } from "../../api/graphService";
-import idCollection from "../../api/idCollection";
-
-const { siteId, equipmentCatalog } = idCollection;
-const modelQueryPrefix = `/sites/${siteId}/lists/${equipmentCatalog}/items/`;
-const modelQuerySuffix =
-  "?$expand=fields($select=id,Title,Manufacturer_x003a_Title)";
 
 function AssetSelector(props) {
   const { selectedAsset, setSelectedAsset, assetList } = props;
@@ -23,49 +17,66 @@ function AssetSelector(props) {
     if (assetList.length > 0 && assetList[0] !== "loading") {
       setModelIds(
         assetList.reduce((accumulator, current) => {
-          if (accumulator.indexOf(current.id) === -1) {
-            accumulator.push(current.id);
+          if (accumulator.indexOf(current.Id) === -1) {
+            accumulator.push(current.Id);
           }
           return accumulator;
         }, [])
       );
+    } else {
+      setModelIds([]);
     }
   }, [assetList]);
 
   useEffect(() => {
     if (modelIds.length > 0) {
-      const requests = modelIds.map(id => {
-        return {
-          id,
-          method: "GET",
-          url: `${modelQueryPrefix}${id}${modelQuerySuffix}`
-        };
+      let batchModelsByIds = sp.createBatch();
+      let models = [];
+
+      modelIds.forEach(id => {
+        sp.web.lists
+          .getByTitle("equipment-catalog")
+          .items.getById(id)
+          .select("Id", "Title", "Manufacturer", "Manufacturer/Title")
+          .expand("Manufacturer")
+          .inBatch(batchModelsByIds)
+          .get()
+          .then(item => {
+            models.push(item);
+          });
       });
-      const fetchData = async () => {
-        const response = await batchModelsByIds(requests);
-        setManufacturers(response.responses.map(res => res.body.fields));
-      };
-      fetchData();
+
+      batchModelsByIds.execute().then(() => setManufacturers(models));
     }
   }, [modelIds]);
 
   const assetData = assetList.map(asset => {
+    const {
+      Asset_x0020_Model: AssetModel = {
+        Title: "N/A",
+        Id: "N/A",
+        Description: "N/A"
+      }
+    } = asset;
+
     let assetMake = "";
     if (manufacturers.length > 0) {
-      assetMake = manufacturers.filter(model => {
-        return model.id === asset.Asset_x0020_ModelLookupId;
-      })[0].Manufacturer_x003a_Title;
+      const mfrFilter = manufacturers.filter(model => {
+        return model.Id === AssetModel.Id;
+      })[0];
+
+      assetMake = mfrFilter && mfrFilter.Manufacturer.Title;
     }
 
     return {
       assetMake,
-      assetModel: asset.Asset_x0020_Model_x003a_Title,
+      assetModel: AssetModel.Title,
       assetSerial: asset.Title,
-      assetId: asset.id,
-      assetModelId: asset.Asset_x0020_ModelLookupId,
-      assetName: asset.Asset_x0020_Model_x003a_Descript,
-      optionDisplay: `${assetMake} - ${asset.Asset_x0020_Model_x003a_Title} -
-      ${asset.Asset_x0020_Model_x003a_Descript}`
+      assetId: asset.Id,
+      assetModelId: AssetModel.Id,
+      assetName: AssetModel.Description,
+      optionDisplay: `${assetMake} - ${AssetModel.Title} -
+      ${AssetModel.Description}`
     };
   });
 

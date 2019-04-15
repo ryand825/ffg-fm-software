@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
+import { sp } from "@pnp/sp";
 
 import AddTasks from "./AddTasks";
 import AssetSelector from "./AssetSelector";
@@ -7,12 +8,6 @@ import AutoComplete from "../common/AutoComplete";
 import Card from "../common/Card";
 import InfoPills from "../common/InfoPills/InfoPills";
 import Spinner from "../common/Spinner";
-
-import {
-  getLocationList,
-  getTechnicianlist,
-  getAssetsByLocationId
-} from "../../api/graphService";
 
 function CreateJob() {
   const nowISO = new Date().toISOString().split("T")[0];
@@ -28,29 +23,42 @@ function CreateJob() {
   const [selectedAsset, setSelectedAsset] = useState({});
 
   useLayoutEffect(() => {
-    const fetchData = async () => {
-      const locationData = await getLocationList();
-      setLocationList(locationData.value.map(value => value.fields));
-    };
-    fetchData();
-  }, []);
+    const batchLocTech = sp.createBatch();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const techData = await getTechnicianlist();
-      setTechList(techData.value.map(value => value.fields));
-    };
-    fetchData();
+    sp.web.lists
+      .getByTitle("service-locations")
+      .items.inBatch(batchLocTech)
+      .get()
+      .then(locations => {
+        setLocationList(locations);
+      });
+
+    sp.web.lists
+      .getByTitle("service-technicians")
+      .items.inBatch(batchLocTech)
+      .get()
+      .then(technicians => setTechList(technicians));
+
+    batchLocTech.execute();
   }, []);
 
   useLayoutEffect(() => {
-    if (currentLocation.id) {
+    if (currentLocation.ID) {
       setAssetList(["loading"]);
-      const fetchData = async () => {
-        const assetData = await getAssetsByLocationId(currentLocation.id);
-        setAssetList(assetData.value.map(value => value.fields));
-      };
-      fetchData();
+      sp.web.lists
+        .getByTitle("service-location-assets")
+        .items.filter(`Asset_x0020_LocationId eq '${currentLocation.Id}'`)
+        .select(
+          "Id",
+          "Title",
+          "Asset_x0020_Model",
+          "Asset_x0020_Model/Title",
+          "Asset_x0020_Model/Id",
+          "Asset_x0020_Model/Description"
+        )
+        .expand("Asset_x0020_Model")
+        .get()
+        .then(assets => setAssetList(assets));
     }
   }, [currentLocation]);
 
