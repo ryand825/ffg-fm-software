@@ -3,7 +3,7 @@ import React from "react";
 import Downshift from "downshift";
 
 function AutoComplete(props) {
-  const { itemArray, setData, keyString, label } = props;
+  const { itemArray, setData, keyString, label, errorMessage } = props;
 
   return (
     <Downshift
@@ -21,8 +21,16 @@ function AutoComplete(props) {
         selectedItem
       }) => (
         <div>
-          <label {...getLabelProps()}>{label}</label>
-          <input className="form-control" {...getInputProps()} />
+          <div className="form-group">
+            <label {...getLabelProps()}>{label}</label>
+            <input
+              className={
+                errorMessage ? "form-control is-invalid" : "form-control"
+              }
+              {...getInputProps()}
+            />
+            <div className="invalid-feedback">{errorMessage}</div>
+          </div>
           <ul className="list-group" {...getMenuProps()}>
             {isOpen
               ? itemArray

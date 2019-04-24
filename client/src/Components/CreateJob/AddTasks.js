@@ -38,30 +38,32 @@ function AddTasks(props) {
   return (
     <>
       <label htmlFor="">Add Tasks</label>
-      <ul className="list-group">
-        <li className="list-group-item input-group">
-          <div className="input-group">
-            <input
-              value={formValue}
-              onChange={e => setFormValue(e.target.value)}
-              type="text"
-              className="form-control"
-              placeholder="New Task..."
-            />
-            <div className="input-group-append">
-              <button
-                disabled={disabled}
-                onClick={addTask}
-                className="btn btn-outline-success"
-                type="button"
-              >
-                Add
-              </button>
+      <form className="mb-2">
+        <ul className="list-group">
+          <li className="list-group-item input-group">
+            <div className="input-group">
+              <input
+                value={formValue}
+                onChange={e => setFormValue(e.target.value)}
+                type="text"
+                className="form-control"
+                placeholder="New Task..."
+              />
+              <div className="input-group-append">
+                <button
+                  disabled={disabled}
+                  onClick={addTask}
+                  className="btn btn-outline-success"
+                  type="submit"
+                >
+                  Add
+                </button>
+              </div>
             </div>
-          </div>
-        </li>
-        {taskMap}
-      </ul>
+          </li>
+          {taskMap}
+        </ul>
+      </form>
     </>
   );
 }

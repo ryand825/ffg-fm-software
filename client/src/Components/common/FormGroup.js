@@ -9,7 +9,8 @@ function FormGroup(props) {
     onChange,
     type,
     optionsArray,
-    optionsKeyString
+    optionsKeyString,
+    errorMessage
   } = props;
   let field = <input />;
 
@@ -27,7 +28,9 @@ function FormGroup(props) {
         <select
           onChange={handleSelect}
           type={type || "text"}
-          className="custom-select"
+          className={
+            errorMessage ? "custom-select is-invalid" : "custom-select"
+          }
           id={label + "-form"}
           placeholder={placeholder}
           defaultValue=""
@@ -48,7 +51,7 @@ function FormGroup(props) {
     case "textarea":
       field = (
         <textarea
-          className="form-control"
+          className={errorMessage ? "form-control is-invalid" : "form-control"}
           onChange={handleChange}
           value={value}
           id={label + "-form"}
@@ -62,7 +65,7 @@ function FormGroup(props) {
           onChange={handleChange}
           value={value}
           type={type || "text"}
-          className="form-control"
+          className={errorMessage ? "form-control is-invalid" : "form-control"}
           id={label + "-form"}
           placeholder={placeholder}
         />
@@ -73,6 +76,7 @@ function FormGroup(props) {
     <div className="form-group">
       {label && <label htmlFor={label + "-form"}>{label}</label>}
       {field}
+      <div className="invalid-feedback">{errorMessage}</div>
     </div>
   );
 }

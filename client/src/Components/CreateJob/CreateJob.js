@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { sp } from "@pnp/sp";
 
 import AddTasks from "./AddTasks";
@@ -21,6 +21,8 @@ function CreateJob() {
   const [assignee, setAssignee] = useState("Unassigned");
   const [jobDescription, setJobDescription] = useState("");
   const [selectedAsset, setSelectedAsset] = useState({});
+  const [errors, setErrors] = useState({});
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   useLayoutEffect(() => {
     const batchLocTech = sp.createBatch();
@@ -42,7 +44,7 @@ function CreateJob() {
     batchLocTech.execute();
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (currentLocation.ID) {
       setAssetList(["loading"]);
       sp.web.lists
@@ -62,21 +64,85 @@ function CreateJob() {
     }
   }, [currentLocation]);
 
+  const handleSubmit = e => {
+    e.preventDefault();
+
+    let tempErrors = {
+      error: false,
+      location: "",
+      jobDescription: ""
+    };
+
+    if (!currentLocation.Id) {
+      tempErrors.location = "Location must be selected.";
+      tempErrors.error = true;
+    }
+    if (jobDescription.length < 1) {
+      tempErrors.description = "Description is required";
+      tempErrors.error = true;
+    }
+
+    if (tempErrors.error) {
+      setErrors(tempErrors);
+    } else {
+      setErrors({});
+      setSubmitLoading(true);
+      const newJob = {
+        Assigned_x0020_Date: selectedDate,
+        Title: jobDescription,
+        StatusId: 1,
+        AssigneeId: assignee.Id && { results: [assignee.Id] },
+        Service_x0020_LocationId: currentLocation.Id,
+        AssetId: selectedAsset.assetId && selectedAsset.assetId
+      };
+      if (taskList.length > 0) {
+        const taskBatch = sp.createBatch();
+        let taskIdArray = [];
+
+        taskList.forEach(Title => {
+          sp.web.lists
+            .getByTitle("service-job-tasks")
+            .items.inBatch(taskBatch)
+            .add({ Title })
+            .then(iar => {
+              taskIdArray.push(iar.data.Id);
+              console.log(taskIdArray);
+            });
+        });
+
+        taskBatch.execute().then(() => {
+          createJob({ TasksId: { results: taskIdArray }, ...newJob });
+        });
+      } else {
+        createJob(newJob);
+      }
+
+      function createJob(jobObject) {
+        sp.web.lists
+          .getByTitle("service-jobs")
+          .items.add(jobObject)
+          .then(iar => {
+            console.log(iar);
+          });
+      }
+    }
+  };
+
   if (locationList.length > 0) {
     return (
       <div className="container">
-        <form className="form">
+        <div className="form">
           <Card header="Create Job">
-            {/* Location form */}
-            <AutoComplete
-              keyString="Title"
-              label="Choose Location"
-              setData={setCurrentLocation}
-              itemArray={locationList}
-            />
-            {/* Hides form if location is not selected */}
-            {currentLocation.Title && (
-              <>
+            <div className="row">
+              <div className="col-md">
+                {/* Location form */}
+                <AutoComplete
+                  keyString="Title"
+                  label="Choose Location"
+                  setData={setCurrentLocation}
+                  itemArray={locationList}
+                  errorMessage={errors.location}
+                />
                 <hr className="seperator" />
                 {/* Location Info */}
                 <InfoPills
@@ -111,9 +177,12 @@ function CreateJob() {
                   value={jobDescription}
                   label="Job Description"
                   onChange={setJobDescription}
+                  errorMessage={errors.description}
                 />
                 <hr className="seperator" />
                 {/* Tech Selection */}
+              </div>
+              <div className="col-md">
                 <FormGroup
                   type="select"
                   optionsKeyString="Title"
@@ -140,10 +209,25 @@ function CreateJob() {
                 <hr className="seperator" />
                 {/* Task List */}
                 <AddTasks taskList={taskList} setTaskList={setTaskList} />{" "}
-              </>
-            )}
+              </div>
+            </div>
+            <button
+              onClick={e => handleSubmit(e)}
+              type="submit"
+              disabled={submitLoading}
+              className="btn btn-outline-success btn-block mt-2"
+            >
+              {submitLoading ? (
+                <>
+                  <span className="spinner-grow spinner-grow-sm" />
+                  Creating Job...
+                </>
+              ) : (
+                "Submit"
+              )}
+            </button>
           </Card>
-        </form>
+        </div>
       </div>
     );
   } else {

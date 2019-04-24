@@ -1,6 +1,11 @@
 import React, { Component } from "react";
-import CreateJob from "./Components/CreateJob/CreateJob";
+import { Router } from "@reach/router";
 import { sp } from "@pnp/sp";
+
+import Navigation from "./Components/Navigation/Navigation";
+import CreateJob from "./Components/CreateJob/CreateJob";
+import JobList from "./Components/JobList/JobList";
+import EditJob from "./Components/EditJob/EditJob";
 
 class App extends Component {
   onInit() {
@@ -29,9 +34,16 @@ class App extends Component {
 
   render() {
     return (
-      <div className="p-2">
-        <CreateJob />
-      </div>
+      <>
+        <Navigation />
+        <div className="p-2">
+          <Router>
+            <CreateJob path="/sites/devnet/test/index.aspx/create-job" />
+            <JobList path="/sites/devnet/test/index.aspx/job-list" />
+            <EditJob path="/sites/devnet/test/index.aspx/edit-job/:jobId" />
+          </Router>
+        </div>
+      </>
     );
   }
 }
