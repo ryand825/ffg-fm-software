@@ -35,7 +35,7 @@ function EditJobLocationSection(props) {
   return (
     <>
       <Form.Group controlId="formBasicEmail">
-        <Form.Label />
+        <Form.Label>Location</Form.Label>
         <InputGroup>
           <Form.Control value={location.Title} readOnly type="text" />
           <InputGroup.Append>
