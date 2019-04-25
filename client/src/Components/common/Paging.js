@@ -18,7 +18,7 @@ function Paging(props) {
     getPerPage(perPage);
   }, [page]);
 
-  const totalPages = listLength / perPage;
+  const totalPages = Math.ceil(listLength / perPage);
 
   return (
     <Pagination>

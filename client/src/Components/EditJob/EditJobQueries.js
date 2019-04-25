@@ -24,7 +24,8 @@ export function getJobById(id) {
       "Assigned_x0020_Date",
       "Tasks",
       "Tasks/Id",
-      "Tasks/Title"
+      "Tasks/Title",
+      "Tasks/taskComplete"
     )
     .expand("Service_x0020_Location", "Assignee", "Status", "Tasks")
     .get();
@@ -54,3 +55,50 @@ export function updateJobData(id, dataObj) {
     .items.getById(id)
     .update(dataObj);
 }
+
+export async function addTasksToJob(id, Title) {
+  const newTask = await sp.web.lists
+    .getByTitle("service-job-tasks")
+    .items.add({ Title });
+
+  console.log(newTask);
+  const {
+    Id: newId,
+    Title: newTitle,
+    taskComplete: newTaskComplete
+  } = newTask.data;
+
+  const currentJobTasks = await sp.web.lists
+    .getByTitle("service-jobs")
+    .items.getById(id)
+    .select("Tasks", "Tasks/Id", "Tasks/Title", "Tasks/taskComplete")
+    .expand("Tasks")
+    .get();
+
+  const newTaskObject = {
+    Id: newId,
+    Title: newTitle,
+    taskComplete: newTaskComplete
+  };
+  console.log(newTaskObject);
+  let newTaskArray = currentJobTasks.Tasks.results.map(task => task);
+  newTaskArray.push(newTaskObject);
+
+  console.log(newTaskArray);
+
+  await sp.web.lists
+    .getByTitle("service-jobs")
+    .items.getById(id)
+    .select("Tasks", "Tasks/Id", "Tasks/Title", "Tasks/taskComplete")
+    .expand("Tasks")
+    .update({ TasksId: { results: newTaskArray.map(task => task.Id) } });
+
+  return newTaskArray;
+}
+
+export const deleteJobTask = id => {
+  return sp.web.lists
+    .getByTitle("service-job-tasks")
+    .items.getById(id)
+    .delete();
+};

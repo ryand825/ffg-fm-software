@@ -15,7 +15,7 @@ function Navigation() {
   const [searchField, setSearchField] = useState("");
 
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar fixed="top" className="mb-4" bg="light" expand="lg">
       <Link to="/">
         <Navbar.Brand>ffg-FM</Navbar.Brand>
       </Link>

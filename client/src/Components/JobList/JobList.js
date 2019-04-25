@@ -3,6 +3,7 @@ import { Container, Table, Button } from "react-bootstrap";
 import { navigate } from "@reach/router";
 
 import Paging from "../common/Paging";
+import Loading from "../common/Loading";
 
 import { getJobList } from "./JobListQueries";
 
@@ -52,25 +53,27 @@ function JobList() {
     });
 
   return (
-    <Container>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Assignee</th>
-          </tr>
-        </thead>
-        <tbody>{jobTable}</tbody>
-      </Table>
-      <Paging
-        listLength={jobList.length}
-        getPage={setPage}
-        getPerPage={getPerPage}
-      />
-    </Container>
+    <Loading isLoading={jobList[0] ? false : true}>
+      <Container>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Assignee</th>
+            </tr>
+          </thead>
+          <tbody>{jobTable}</tbody>
+        </Table>
+        <Paging
+          listLength={jobList.length}
+          getPage={setPage}
+          getPerPage={getPerPage}
+        />
+      </Container>
+    </Loading>
   );
 }
 

@@ -8,6 +8,7 @@ import EditJobDescription from "./EditJobDescription";
 import EditJobAssignment from "./EditJobAssignment";
 import EditJobDate from "./EditJobDate";
 import EditJobStatus from "./EditJobStatus";
+import EditJobTasks from "./EditJobTasks";
 import Loading from "../common/Loading";
 
 function EditJob(props) {
@@ -18,6 +19,7 @@ function EditJob(props) {
   const [assignedTechs, setAssignedTechs] = useState([]);
   const [assignedDate, setAssignedDate] = useState("");
   const [currentStatusId, setCurrentStatusId] = useState({});
+  const [jobTasks, setJobTasks] = useState([]);
 
   useEffect(() => {
     getJobById(props.jobId).then(res => {
@@ -30,6 +32,7 @@ function EditJob(props) {
         .split("T")[0];
       setAssignedDate(date);
       setCurrentStatusId(res.Status.Id);
+      setJobTasks(res.Tasks.results);
     });
   }, []);
 
@@ -82,6 +85,11 @@ function EditJob(props) {
                 <EditJobDate
                   assignedDate={assignedDate}
                   setAssignedDate={setAssignedDate}
+                />
+                <EditJobTasks
+                  jobTasks={jobTasks}
+                  setJobTasks={setJobTasks}
+                  jobId={jobId}
                 />
               </Col>
             </Row>
